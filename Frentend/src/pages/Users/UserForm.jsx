@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Form, FormFields, FormActions } from "../../components/Forms/index.js";
 import { TextInput, Select, Textarea } from "../../components/UI/index.js";
+// import { fetchOrganizations } from "../../services/userApi.js";
 import "../../components/Forms/Forms.css";
 
 const UserForm = ({ onSave, onClose, formData: initialData }) => {
@@ -12,18 +13,43 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
     phone_no: "",
     email: "",
     role: "user",
-    status: "active",
+    isActive: true,
     canLogin: false,
-    username: "",
-    password: "",
+    organizationId: "67a42a7a1e6aa5e7d4b8e1c5", // Default - update based on your org ID
     remarks: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [organizations, setOrganizations] = useState([]);
+
+  // useEffect(() => {
+  //   const loadOrganizations = async () => {
+  //     const orgs = await fetchOrganizations();
+  //     setOrganizations(orgs);
+  //     // Set default org if we have at least one
+  //     if (orgs.length > 0 && !formData.organizationId) {
+  //       setFormData((prev) => ({ ...prev, organizationId: orgs[0]._id }));
+  //     }
+  //   };
+  //   loadOrganizations();
+  // }, []);
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      // Map backend data to form format
+      setFormData({
+        userId: initialData.userId || "",
+        name: initialData.name || "",
+        designation: initialData.designation || "",
+        department: initialData.department || "",
+        phone_no: initialData.phone_no || "",
+        email: initialData.email || "",
+        role: initialData.role || "user",
+        isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+        canLogin: initialData.canLogin || false,
+        organizationId: initialData.organizationId || "67a42a7a1e6aa5e7d4b8e1c5",
+        remarks: initialData.remarks || "",
+      });
     }
   }, [initialData]);
 
@@ -65,15 +91,6 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
       newErrors.email = "Invalid email format";
     }
 
-    if (formData.canLogin && formData.status === "active") {
-      if (!formData.username.trim()) {
-        newErrors.username = "Username is required for login";
-      }
-      if (!formData.password.trim()) {
-        newErrors.password = "Password is required for login";
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -81,7 +98,21 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      await onSave(formData);
+      // Convert form data to backend format
+      const submitData = {
+        userId: formData.userId,
+        name: formData.name,
+        designation: formData.designation,
+        department: formData.department,
+        phone_no: formData.phone_no ? Number(formData.phone_no) : null,
+        email: formData.email,
+        role: formData.role,
+        isActive: formData.isActive,
+        canLogin: formData.canLogin,
+        organizationId: formData.organizationId,
+        remarks: formData.remarks,
+      };
+      await onSave(submitData);
     }
   };
 
@@ -142,6 +173,17 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
               placeholder="e.g., IT, HR, Sales"
             />
 
+            {/* <Select
+              label="Organization"
+              name="organizationId"
+              value={formData.organizationId}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, organizationId: value }))
+              }
+              options={organizations.map((org) => ({ label: org.name, value: org._id }))}
+              required
+            /> */}
+
             <TextInput
               label="Phone Number"
               name="phone_no"
@@ -177,10 +219,10 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
 
             <Select
               label="Status"
-              name="status"
-              value={formData.status}
+              name="isActive"
+              value={formData.isActive ? "active" : "inactive"}
               onChange={(value) =>
-                setFormData((prev) => ({ ...prev, status: value }))
+                setFormData((prev) => ({ ...prev, isActive: value === "active" }))
               }
               options={[
                 { label: "Active", value: "active" },
@@ -207,7 +249,7 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
               }
             />
 
-            {formData.canLogin && formData.status === "active" && (
+            {/* {formData.canLogin && formData.status === "active" && (
               <>
                 <TextInput
                   label="Username"
@@ -228,7 +270,7 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
                   required
                 />
               </>
-            )}
+            )} */}
           </FormFields>
 
           <div className="form-remarks-wrapper">

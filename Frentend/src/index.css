@@ -22,7 +22,21 @@
   --text-color: #1e293b;
   --border-color: #e2e8f0;
   --font-family: "Segoe UI", Roboto, sans-serif;
-  --spacing: 1rem;
+  
+  /* Spacing System - Base Unit */
+  --base-spacing: 1rem;
+  
+  /* Spacing Sizes (multiples of base spacing) */
+  --spacing-xs: calc(var(--base-spacing) * 0.25);   /* 0.25rem = 4px */
+  --spacing-sm: calc(var(--base-spacing) * 0.5);    /* 0.5rem = 8px */
+  --spacing-md: var(--base-spacing);                 /* 1rem = 16px */
+  --spacing-lg: calc(var(--base-spacing) * 1.5);    /* 1.5rem = 24px */
+  --spacing-xl: calc(var(--base-spacing) * 2);      /* 2rem = 32px */
+  --spacing-2xl: calc(var(--base-spacing) * 3);     /* 3rem = 48px */
+  --spacing-3xl: calc(var(--base-spacing) * 4);     /* 4rem = 64px */
+  
+  /* Border Radius */
   --radius: 0.5rem;
-  --page-title-color: #34d399;
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-lg: calc(var(--radius) * 1.5);
 }

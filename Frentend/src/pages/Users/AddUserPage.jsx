@@ -7,11 +7,14 @@ const AddUserPage = () => {
 
   const handleSaveUser = async (userData) => {
     try {
-      await addUser(userData);
+      console.log('Creating new user with data:', userData);
+      const response = await addUser(userData);
+      console.log('User created:', response);
+      alert('User created successfully!');
       navigate("/users");
     } catch (err) {
       console.error("User creation failed", err);
-      alert("Failed to create user");
+      alert("Failed to create user: " + err.message);
     }
   };
 
