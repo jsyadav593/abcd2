@@ -64,6 +64,22 @@
   gap: 0.5rem;
 }
 
+.user-link {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.user-link:hover {
+  color: #0891b2;
+}
+
 .action-menu-container {
   position: relative;
   display: inline-block;

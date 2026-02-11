@@ -80,8 +80,34 @@ const Users = () => {
   };
 
   const columns = [
-    { header: "User ID", key: "userId", sortable: true },
-    { header: "Full Name", key: "name", sortable: true },
+    {
+      header: "User ID",
+      key: "userId",
+      sortable: true,
+      render: (row) => (
+        <button
+          className="user-link"
+          onClick={() => navigate(`/user-detail/${row._id}`)}
+          title="View user details"
+        >
+          {row.userId}
+        </button>
+      ),
+    },
+    {
+      header: "Full Name",
+      key: "name",
+      sortable: true,
+      render: (row) => (
+        <button
+          className="user-link"
+          onClick={() => navigate(`/user-detail/${row._id}`)}
+          title="View user details"
+        >
+          {row.name}
+        </button>
+      ),
+    },
     { header: "Designation", key: "designation" },
     { header: "Department", key: "department" },
     { header: "Email", key: "email" },
@@ -121,7 +147,7 @@ const Users = () => {
                     setOpenMenuId(null);
                   }}
                 >
-                  Disable
+                  Inactive
                 </button>
               ) : (
                 <button
@@ -131,7 +157,7 @@ const Users = () => {
                     setOpenMenuId(null);
                   }}
                 >
-                  Enable
+                  Active
                 </button>
               )}
             </div>

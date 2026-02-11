@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Users from "./pages/Users/Users.jsx"
 import AddUserPage from "./pages/Users/AddUserPage.jsx"
 import EditUserPage from "./pages/Users/EditUserPage.jsx"
+import UserDetailPage from "./pages/Users/UserDetailPage.jsx"
 import Inventory from "./pages/Inventory";
 import Accessory from "./pages/Accessory";
 import Peripheral from "./pages/Peripheral";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/add-user" element={<AddUserPage />} />
           <Route path="/edit-user/:id" element={<EditUserPage />} />
+          <Route path="/user-detail/:id" element={<UserDetailPage />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/accessory" element={<Accessory />} />
           <Route path="/peripheral" element={<Peripheral />} />
