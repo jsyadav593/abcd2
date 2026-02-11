@@ -1,0 +1,8 @@
+.ui-btn{padding:8px 12px;border-radius:6px;border:0;cursor:pointer;font-weight:600}
+.ui-btn:disabled{opacity:.6;cursor:not-allowed}
+.ui-btn--primary{background:#2563eb;color:#fff}
+.ui-btn--secondary{background:#e6edf3;color:#0f172a}
+.ui-btn--ghost{background:transparent;border:1px solid #e2e8f0}
+.ui-btn--sm{padding:6px 8px;font-size:13px}
+.ui-btn--md{padding:8px 12px;font-size:14px}
+.ui-btn--lg{padding:10px 16px;font-size:16px}

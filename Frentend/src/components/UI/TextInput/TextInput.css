@@ -1,0 +1,61 @@
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.ui-label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #1e293b;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.required-star {
+  color: #ef4444;
+  font-weight: 600;
+  margin-left: 3px;
+}
+
+.ui-input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  font-family: inherit;
+  color: #0f172a;
+}
+
+.ui-input::placeholder {
+  color: #94a3b8;
+}
+
+.ui-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  border-color: #2563eb;
+  background-color: #f8fafc;
+}
+
+.ui-input:disabled {
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.6;
+  color: #64748b;
+}
+
+/* Smooth transition for input type */
+.ui-input[type="email"],
+.ui-input[type="password"],
+.ui-input[type="text"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Hover effect */
+.ui-input:hover:not(:disabled) {
+  border-color: #b0b9c3;
+}

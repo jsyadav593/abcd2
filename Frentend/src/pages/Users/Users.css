@@ -1,0 +1,108 @@
+.users-actions {
+  margin-bottom: 1rem;
+}
+
+.users-actions__bar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.8rem;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 20;
+}
+
+.users-actions__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+.users-actions__btn--filter {
+  background: #6c757d;
+}
+
+.users-actions__btn--add {
+  background: #007bff;
+}
+
+.users-actions__btn--export {
+  background: #28a745;
+}
+
+.users-actions__btn--delete {
+  background: #dc3545;
+}
+
+.users-filters {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.users-filters__row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.users-table {
+  margin-top: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn {
+  color: #0891b2;
+}
+
+.edit-btn:hover {
+  color: #0891b2;
+  opacity: 0.8;
+}
+
+.delete-btn {
+  color: #dc3545;
+}
+
+.delete-btn:hover {
+  color: #dc3545;
+  opacity: 0.8;
+}
+
+.material-icons {
+  font-size: 18px;
+}
+
+.page-title {
+  margin-bottom: 1.5rem;
+}
+
+.page-title h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}

@@ -1,0 +1,28 @@
+@import "material-icons/iconfont/material-icons.css";
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Public Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
+  /* --header-height:60px; */
+  --header-height: 4rem;
+  --nav-width: 10rem;
+  --primary-color: #2563eb; /* Blue Accent */
+  --bg-color: #ffffff;
+  --header-bg-color: #111827;
+  --menu-hover-color: #2563eb;
+  --text-color: #1e293b;
+  --border-color: #e2e8f0;
+  --font-family: "Segoe UI", Roboto, sans-serif;
+  --spacing: 1rem;
+  --radius: 0.5rem;
+  --page-title-color: #34d399;
+}

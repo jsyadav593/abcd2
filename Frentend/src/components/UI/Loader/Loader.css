@@ -1,0 +1,2 @@
+.ui-loader{border:3px solid #e6eef8;border-top-color:#2563eb;border-radius:50%;animation:ui-spin .9s linear infinite}
+@keyframes ui-spin{to{transform:rotate(360deg)}}

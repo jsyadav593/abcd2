@@ -1,0 +1,23 @@
+.app-layout {
+  display: block;
+}
+
+.main-content {
+  /* margin-top: var(--header-height); */
+  margin-left: var(--nav-width);
+  padding: 1rem;
+  transition: margin-left 0.3s ease;
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg-color);
+}
+
+.main-content.collapsed {
+  margin-left: 0;
+}
+
+/* Responsive: small screens keep sidebar hidden */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+}
