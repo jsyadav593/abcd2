@@ -1,18 +1,22 @@
-// export async function fetchOrganizations() {
-//   try {
-//     const res = await fetch(`/api/organizations`);
-//     if (!res.ok) throw new Error('Failed to fetch organizations');
-//     const json = await res.json();
-//     return json?.data || [];
-//   } catch (e) {
-//     console.error('Fetch organizations error:', e);
-//     return [];
-//   }
-// }
+// Get API base URL from environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
+/**
+ * Helper function to handle API responses
+ */
+async function handleApiResponse(response) {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      message: `HTTP ${response.status}: ${response.statusText}`,
+    }));
+    throw new Error(error.message || 'API request failed');
+  }
+  return response.json();
+}
 
 export async function fetchUsers(page = 1, limit = 100) {
   try {
-    const res = await fetch(`/api/users?page=${page}&limit=${limit}`);
+    const res = await fetch(`${API_URL}/users?page=${page}&limit=${limit}`);
     if (!res.ok) throw new Error('Network error');
     const json = await res.json();
     // console.log('API Response:', json);
@@ -37,7 +41,7 @@ export async function disableUser(id) {
   try {
     // Disable user using dedicated endpoints for better scalability
     // Step 1: Deactivate user (isActive: false)
-    const deactivateRes = await fetch(`/api/users/${id}`, {
+    const deactivateRes = await fetch(`${API_URL}/users/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isActive: false }),
@@ -46,7 +50,7 @@ export async function disableUser(id) {
     if (!deactivateRes.ok) throw new Error('Failed to deactivate user');
 
     // Step 2: Revoke login capability (canLogin: false)
-    const revokeRes = await fetch(`/api/users/${id}/toggle-login`, {
+    const revokeRes = await fetch(`${API_URL}/users/${id}/toggle-login`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ canLogin: false }),
@@ -65,7 +69,7 @@ export async function disableUser(id) {
 export async function enableUser(id) {
   try {
     // Enable user: only set isActive: true (keep canLogin as is)
-    const res = await fetch(`/api/users/${id}`, {
+    const res = await fetch(`${API_URL}/users/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isActive: true }),
@@ -82,7 +86,7 @@ export async function enableUser(id) {
 
 export async function addUser(user) {
   try {
-    const res = await fetch('/api/users', {
+    const res = await fetch(`${API_URL}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
@@ -97,7 +101,7 @@ export async function addUser(user) {
 
 export async function fetchUserById(id) {
   try {
-    const res = await fetch(`/api/users/${id}`);
+    const res = await fetch(`${API_URL}/users/${id}`);
     if (!res.ok) throw new Error('Failed to fetch user');
     const json = await res.json();
     // Backend returns { statusCode: 200, data: user }
@@ -110,7 +114,7 @@ export async function fetchUserById(id) {
 
 export async function updateUser(id, user) {
   try {
-    const res = await fetch(`/api/users/${id}`, {
+    const res = await fetch(`${API_URL}/users/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
@@ -128,7 +132,7 @@ export async function updateUser(id, user) {
 // Toggle user login capability
 export async function toggleCanLogin(id, canLogin) {
   try {
-    const res = await fetch(`/api/users/${id}/toggle-login`, {
+    const res = await fetch(`${API_URL}/users/${id}/toggle-login`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ canLogin }),
@@ -145,7 +149,7 @@ export async function toggleCanLogin(id, canLogin) {
 // Block user
 export async function blockUser(id) {
   try {
-    const res = await fetch(`/api/users/${id}/block-unblock`, {
+    const res = await fetch(`${API_URL}/users/${id}/block-unblock`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isBlocked: true }),
@@ -162,7 +166,7 @@ export async function blockUser(id) {
 // Unblock user
 export async function unblockUser(id) {
   try {
-    const res = await fetch(`/api/users/${id}/block-unblock`, {
+    const res = await fetch(`${API_URL}/users/${id}/block-unblock`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isBlocked: false }),
@@ -181,7 +185,7 @@ export async function unblockUser(id) {
 // Get users by organization
 export async function getUsersByOrganization(organizationId, page = 1, limit = 10) {
   try {
-    const res = await fetch(`/api/users/org/${organizationId}?page=${page}&limit=${limit}`);
+    const res = await fetch(`${API_URL}/users/org/${organizationId}?page=${page}&limit=${limit}`);
     if (!res.ok) throw new Error('Failed to fetch users by organization');
     const json = await res.json();
     
@@ -212,7 +216,7 @@ export async function getUsersByRole(role, organizationId = '', page = 1, limit 
       query.append('organizationId', organizationId);
     }
     
-    const res = await fetch(`/api/users/role/${role}?${query.toString()}`);
+    const res = await fetch(`${API_URL}/users/role/${role}?${query.toString()}`);
     if (!res.ok) throw new Error('Failed to fetch users by role');
     const json = await res.json();
     
@@ -235,7 +239,7 @@ export async function getUsersByRole(role, organizationId = '', page = 1, limit 
 // Get user statistics
 export async function getUserStats() {
   try {
-    const res = await fetch('/api/users/stats/all');
+    const res = await fetch(`${API_URL}/users/stats/all`);
     if (!res.ok) throw new Error('Failed to fetch user statistics');
     const json = await res.json();
     return json?.data || {};

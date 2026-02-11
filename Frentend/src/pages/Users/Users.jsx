@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Table from "../../components/UI/Table/Table.jsx";
 import Button from "../../components/UI/Button/Button.jsx";
+import { PageLoader } from "../../components/UI/Loader/Loader.jsx";
+import { ErrorNotification } from "../../components/ErrorBoundary/index.js";
 import "./Users.css";
 import { fetchUsers, disableUser, enableUser } from "../../services/userApi";
 import { exportToCSV } from "../../utils/exportToCSV";
@@ -13,16 +15,22 @@ const Users = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        // Fetch with large limit to get all users
-        const data = await fetchUsers(1, 1000);
-        // console.log('Users loaded:', data);
+        setLoading(true);
+        setError(null);
+        // Fetch with reasonable limit (not 1000)
+        const data = await fetchUsers(1, 50);
         setAllUsers(data);
       } catch (error) {
         console.error("Failed to fetch users", error);
+        setError(error.message || "Failed to load users");
+      } finally {
+        setLoading(false);
       }
     };
     loadUsers();
@@ -51,13 +59,17 @@ const Users = () => {
     if (!confirmed) return;
 
     try {
+      setLoading(true);
+      setError(null);
       await disableUser(id);
       setAllUsers((prev) =>
-        prev.map((u) => (u._id === id ? { ...u, isActive: false, status: 'Inactive' } : u))
+        prev.map((u) => (u._id === id ? { ...u, isActive: false, status: 'Inactive', canLogin: false } : u))
       );
     } catch (err) {
       console.error('Disable failed', err);
-      alert('Failed to disable user');
+      setError(err.message || 'Failed to disable user');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,13 +81,17 @@ const Users = () => {
     if (!confirmed) return;
 
     try {
+      setLoading(true);
+      setError(null);
       await enableUser(id);
       setAllUsers((prev) =>
         prev.map((u) => (u._id === id ? { ...u, isActive: true, status: 'Active' } : u))
       );
     } catch (err) {
       console.error('Enable failed', err);
-      alert('Failed to enable user');
+      setError(err.message || 'Failed to enable user');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -179,21 +195,32 @@ const Users = () => {
     if (!confirmed) return;
 
     try {
+      setLoading(true);
+      setError(null);
       await Promise.all(selectedRows.map((id) => disableUser(id)));
 
       setAllUsers((prev) =>
-        prev.map((u) => (selectedRows.includes(u._id) ? { ...u, isActive: false, status: 'Inactive' } : u))
+        prev.map((u) => (selectedRows.includes(u._id) ? { ...u, isActive: false, status: 'Inactive', canLogin: false } : u))
       );
 
       setSelectedRows([]);
     } catch (err) {
       console.error("Bulk disable failed", err);
-      alert("Bulk disable failed");
+      setError(err.message || "Bulk disable failed");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Show loading state
+  if (loading && allUsers.length === 0) {
+    return <PageLoader message="Loading users..." />;
+  }
+
   return (
     <div className="users-page">
+      {error && <ErrorNotification error={new Error(error)} onClose={() => setError(null)} />}
+
       <div className="page-title">
         <h2>Users</h2>
       </div>

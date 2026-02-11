@@ -1,22 +1,36 @@
-// createUser - Create new user with validation
-// getAllUsers - Get all users with filtering, pagination, and population
-// getUserById - Fetch single user with populated references
-// updateUser - Update user details
-// deleteUser - Soft delete (marks as inactive)
-// blockUnblockUser - Block or unblock users
-// toggleCanLogin - Enable/disable login capability
-// updateUserPermissions - Update user permissions
-// getUsersByOrganization - Get users from specific organization
-// getUsersByRole - Filter users by role
-// getUserStats - Get aggregated stats by role
-
-
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
+import logger from "../utils/logger.js";
 import { User } from "../models/user.model.js";
-import { UserLogin } from "../models/userLogin.model.js"; // ADD THIS LINE
+import { UserLogin } from "../models/userLogin.model.js";
+import { Audit, createAuditLog } from "../models/audit.model.js";
 import mongoose from "mongoose";
+
+// Helper function to log audit trail
+async function logAudit(req, action, resourceId, changes = {}, status = 'success', errorMessage = null) {
+  try {
+    await createAuditLog({
+      userId: req.user?._id || null,
+      action,
+      resourceType: 'User',
+      resourceId,
+      organizationId: req.body.organizationId || req.query.organizationId,
+      changes,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      status,
+      errorMessage,
+      metadata: {
+        endpoint: req.originalUrl,
+        method: req.method,
+      },
+    });
+  } catch (error) {
+    logger.error('Audit logging failed', { error: error.message });
+    // Don't throw - audit failure shouldn't break main operation
+  }
+}
 
 // Create a new user
 const createUser = asyncHandler(async (req, res) => {
@@ -36,15 +50,6 @@ const createUser = asyncHandler(async (req, res) => {
     isActive,
     isBlocked,
   } = req.body;
-
-  // Validation
-  if (!userId || !name || !organizationId) {
-    throw new apiError(400, "UserId, Name, and OrganizationId are required");
-  }
-
-  if (!["enterprise_admin", "super_admin", "admin", "user"].includes(role)) {
-    throw new apiError(400, "Invalid role provided");
-  }
 
   // Check if user already exists
   const existingUser = await User.findOne({ userId, organizationId });
@@ -68,8 +73,13 @@ const createUser = asyncHandler(async (req, res) => {
     branchId: branchId || [],
     isActive: isActive !== undefined ? isActive : true,
     isBlocked: isBlocked !== undefined ? isBlocked : false,
-    createdBy: req.user?._id, // Assuming authenticated user is in req.user
+    createdBy: req.user?._id,
   });
+
+  // Log audit trail
+  await logAudit(req, 'USER_CREATED', user._id, { after: user.toObject() });
+
+  logger.info('User created', { userId: user._id, userName: user.name, organizationId });
 
   return res
     .status(201)

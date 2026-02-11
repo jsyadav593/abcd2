@@ -1,5 +1,6 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary/index.js";
 import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
 import Users from "./pages/Users/Users.jsx"
@@ -17,25 +18,27 @@ import Profile from "./pages/Profile";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/add-user" element={<AddUserPage />} />
-          <Route path="/edit-user/:id" element={<EditUserPage />} />
-          <Route path="/user-detail/:id" element={<UserDetailPage />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/accessory" element={<Accessory />} />
-          <Route path="/peripheral" element={<Peripheral />} />
-          <Route path="/issue-item" element={<IssueItem />} />
-          <Route path="/repair" element={<Repair />} />
-          <Route path="/upgrade" element={<Upgrade />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-      </Layout>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/add-user" element={<AddUserPage />} />
+            <Route path="/edit-user/:id" element={<EditUserPage />} />
+            <Route path="/user-detail/:id" element={<UserDetailPage />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/accessory" element={<Accessory />} />
+            <Route path="/peripheral" element={<Peripheral />} />
+            <Route path="/issue-item" element={<IssueItem />} />
+            <Route path="/repair" element={<Repair />} />
+            <Route path="/upgrade" element={<Upgrade />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

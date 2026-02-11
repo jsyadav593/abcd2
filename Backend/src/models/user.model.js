@@ -102,4 +102,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Indexes for better query performance
+userSchema.index({ userId: 1, organizationId: 1 }, { unique: true });
+userSchema.index({ email: 1 });
+userSchema.index({ organizationId: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
+userSchema.index({ isBlocked: 1 });
+userSchema.index({ createdAt: -1 });
+
 export const User = mongoose.model("User", userSchema);
