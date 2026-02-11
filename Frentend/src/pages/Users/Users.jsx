@@ -16,13 +16,14 @@ const Users = () => {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const data = await fetchUsers();
+        // Fetch with large limit to get all users
+        const data = await fetchUsers(1, 1000);
+        console.log('Users loaded:', data);
         setAllUsers(data);
       } catch (error) {
         console.error("Failed to fetch users", error);
       }
     };
-
     loadUsers();
   }, []);
 
@@ -50,23 +51,8 @@ const Users = () => {
 
           <button
             className="delete-btn"
-            onClick={async () => {
-              const confirmed = window.confirm(
-                `Are you sure you want to delete this user?\n\nName: ${row.name}\nUser ID: ${row.userId}`
-              );
-
-              if (!confirmed) return;
-
-              try {
-                await deleteUser(row._id);
-
-                setAllUsers((prev) => prev.filter((u) => u._id !== row._id));
-
-                setSelectedRows((prev) => prev.filter((id) => id !== row._id));
-              } catch (err) {
-                alert("Delete failed: " + err.message);
-              }
-            }}
+            disabled
+            title="Delete disabled"
           >
             <span className="material-icons">delete</span>
           </button>

@@ -78,49 +78,51 @@ const createUser = asyncHandler(async (req, res) => {
 
 // Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
-  const { organizationId, role, isActive, page = 1, limit = process.env.PAGE_LIMIT } = req.query;
+  const { organizationId, role, isActive, page = 1, limit = process.env.PAGE_LIMIT || 10 } = req.query;
 
   const filter = {};
 
-  if (organizationId) {
+  if (organizationId && organizationId.trim()) {
     if (!mongoose.Types.ObjectId.isValid(organizationId)) {
       throw new apiError(400, "Invalid organizationId");
     }
     filter.organizationId = organizationId;
   }
 
-  if (role) {
+  if (role && role.trim()) {
     filter.role = role;
   }
 
-  if (isActive !== undefined) {
+  if (isActive !== undefined && isActive.trim()) {
     filter.isActive = isActive === "true";
   }
 
-  const skip = (page - 1) * limit;
+  const skip = (page - 1) * parseInt(limit);
 
-  const users = await User.find(filter)
-    .populate("reportingTo", "name email role")
-    .populate("organizationId", "name")
-    .populate("branchId", "name")
-    .populate("createdBy", "name email")
-    .skip(skip)
-    .limit(parseInt(limit))
-    .lean();
+  try {
+    const users = await User.find(filter)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .select("-password")
+      .lean();
 
-  const totalUsers = await User.countDocuments(filter);
+    const totalUsers = await User.countDocuments(filter);
 
-  return res.status(200).json(
-    new apiResponse(200, {
-      users,
-      pagination: {
-        total: totalUsers,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(totalUsers / limit),
-      },
-    }),
-  );
+    return res.status(200).json(
+      new apiResponse(200, {
+        users,
+        pagination: {
+          total: totalUsers,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          pages: Math.ceil(totalUsers / limit),
+        },
+      }),
+    );
+  } catch (error) {
+    console.error("getAllUsers error:", error);
+    throw error;
+  }
 });
 
 // Get user by ID

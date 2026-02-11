@@ -1,20 +1,23 @@
-export async function fetchUsers() {
+export async function fetchUsers(page = 1, limit = 100) {
   try {
-    const res = await fetch('/api/users');
+    const res = await fetch(`/api/users?page=${page}&limit=${limit}`);
     if (!res.ok) throw new Error('Network error');
     const json = await res.json();
-    // assume backend returns { data: { users: [...] } } or array
-    if (Array.isArray(json)) return json;
-    if (json?.data?.users) return json.data.users;
-    if (json?.users) return json.users;
+    console.log('API Response:', json);
+    
+    // backend returns { statusCode: 200, data: { users: [...], pagination: {...} } }
+    if (json?.data?.users && Array.isArray(json.data.users)) {
+      // Map response data to table format
+      return json.data.users.map(u => ({
+        ...u,
+        status: u.isActive ? 'Active' : 'Inactive',
+        remarks: u.remarks || '',
+      }));
+    }
     return [];
   } catch (e) {
-    // fallback mock
-    return [
-      { _id: '1', userId: 'EMP001', name: 'John Admin', designation: 'Manager', department: 'IT', email: 'john@example.com', phone_no: '9999999999', role: 'enterprise_admin', status: 'Active', remarks: '' },
-      { _id: '2', userId: 'EMP002', name: 'Jane User', designation: 'Staff', department: 'HR', email: 'jane@example.com', phone_no: '8888888888', role: 'user', status: 'Active', remarks: '' },
-      { _id: '3', userId: 'EMP003', name: 'Bob Admin', designation: 'Director', department: 'Finance', email: 'bob@example.com', phone_no: '7777777777', role: 'super_admin', status: 'Active', remarks: '' },
-    ];
+    console.error('fetchUsers error:', e);
+    return [];
   }
 }
 
