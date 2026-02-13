@@ -76,6 +76,38 @@ const createUser = asyncHandler(async (req, res) => {
     createdBy: req.user?._id,
   });
 
+  // If canLogin is true on creation, ensure UserLogin exists
+  if (user.canLogin) {
+    const existingLogin = await UserLogin.findOne({ user: user._id });
+    if (!existingLogin) {
+      const baseUsername = user.name
+        .toLowerCase()
+        .replace(/\s+/g, '.')
+        .slice(0, 10);
+      let username = baseUsername;
+      let counter = 1;
+
+      while (await UserLogin.findOne({ username })) {
+        username = `${baseUsername}${counter}`;
+        counter++;
+      }
+
+      const randomPassword = generateRandomPassword();
+
+      const loginRecord = await UserLogin.create({
+        user: user._id,
+        username,
+        password: randomPassword,
+      });
+
+      // attach login info to response data (do not expose hashed password)
+      user.login = {
+        username: loginRecord.username,
+        password: randomPassword,
+        message: 'Login credentials generated',
+      };
+    }
+  }
   // Log audit trail
   await logAudit(req, 'USER_CREATED', user._id, { after: user.toObject() });
 
@@ -185,6 +217,43 @@ const updateUser = asyncHandler(async (req, res) => {
 
   if (!user) {
     throw new apiError(404, "User not found");
+  }
+
+  // If update requested canLogin true, ensure UserLogin exists and return credentials
+  if (updateData.canLogin === true) {
+    const existingLogin = await UserLogin.findOne({ user: user._id });
+    if (!existingLogin) {
+      const baseUsername = user.name
+        .toLowerCase()
+        .replace(/\s+/g, '.')
+        .slice(0, 10);
+      let username = baseUsername;
+      let counter = 1;
+
+      while (await UserLogin.findOne({ username })) {
+        username = `${baseUsername}${counter}`;
+        counter++;
+      }
+
+      const randomPassword = generateRandomPassword();
+
+      const loginRecord = await UserLogin.create({
+        user: user._id,
+        username,
+        password: randomPassword,
+      });
+
+      user.login = {
+        username: loginRecord.username,
+        password: randomPassword,
+        message: 'Login credentials generated',
+      };
+    }
+  }
+
+  // If canLogin explicitly set to false, remove UserLogin record
+  if (updateData.canLogin === false) {
+    await UserLogin.findOneAndDelete({ user: user._id });
   }
 
   return res.status(200).json(new apiResponse(200, user, "User updated successfully"));

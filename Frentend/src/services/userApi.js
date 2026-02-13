@@ -9,7 +9,19 @@ async function handleApiResponse(response) {
     const error = await response.json().catch(() => ({
       message: `HTTP ${response.status}: ${response.statusText}`,
     }));
-    throw new Error(error.message || 'API request failed');
+
+    // If backend returned validation errors array, include details in the thrown error
+    if (error && Array.isArray(error.errors) && error.errors.length > 0) {
+      const details = error.errors.map(e => `${e.field}: ${e.message}`).join('; ');
+      const msg = `${error.message || 'API request failed'} - ${details}`;
+      const err = new Error(msg);
+      err.details = error.errors;
+      throw err;
+    }
+
+    const err = new Error(error.message || 'API request failed');
+    err.details = error.errors || null;
+    throw err;
   }
   return response.json();
 }
@@ -33,6 +45,38 @@ export async function fetchUsers(page = 1, limit = 100) {
     return [];
   } catch (e) {
     console.error('fetchUsers error:', e);
+    return [];
+  }
+}
+
+// Fetch all users by paging until no more results
+export async function fetchAllUsers(limit = 100) {
+  try {
+    let page = 1;
+    let results = [];
+
+    while (true) {
+      const res = await fetch(`${API_URL}/users?page=${page}&limit=${limit}`);
+      const json = await handleApiResponse(res);
+      const users = json?.data?.users || [];
+
+      // map users to table format
+      const mapped = users.map(u => ({
+        ...u,
+        status: u.isActive ? 'Active' : 'Inactive',
+        remarks: u.remarks || '',
+      }));
+
+      results.push(...mapped);
+
+      // stop if this was the last page
+      if (users.length < limit) break;
+      page += 1;
+    }
+
+    return results;
+  } catch (e) {
+    console.error('fetchAllUsers error:', e);
     return [];
   }
 }
@@ -86,13 +130,12 @@ export async function enableUser(id) {
 
 export async function addUser(user) {
   try {
-    const res = await fetch(`${API_URL}`, {
+    const res = await fetch(`${API_URL}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
     });
-    if (!res.ok) throw new Error('Failed to create user');
-    return res.json();
+    return handleApiResponse(res);
   } catch (e) {
     console.error('Add user failed', e);
     throw e;
@@ -119,8 +162,7 @@ export async function updateUser(id, user) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user),
     });
-    if (!res.ok) throw new Error('Failed to update user');
-    return res.json();
+    return handleApiResponse(res);
   } catch (e) {
     console.error('Update user failed', e);
     throw e;
@@ -137,8 +179,7 @@ export async function toggleCanLogin(id, canLogin) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ canLogin }),
     });
-    if (!res.ok) throw new Error('Failed to toggle login');
-    const json = await res.json();
+    const json = await handleApiResponse(res);
     return json?.data || json;
   } catch (e) {
     console.error('toggleCanLogin error:', e);
@@ -245,6 +286,179 @@ export async function getUserStats() {
     return json?.data || {};
   } catch (e) {
     console.error('getUserStats error:', e);
+    throw e;
+  }
+}
+// ==================== Password Reset Functions ====================
+
+/**
+ * Request password reset token
+ * Step 1 of password reset flow
+ * Returns: { resetToken, expiresIn } - token shown only once to user
+ */
+export async function requestPasswordReset(username) {
+  try {
+    const res = await fetch(`${API_URL}/password/request-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Request password reset error:', e);
+    throw e;
+  }
+}
+
+/**
+ * Verify reset token validity
+ * Step 2 of password reset flow (optional but recommended)
+ * Checks if token is valid before showing reset form
+ */
+export async function verifyResetToken(resetToken) {
+  try {
+    const res = await fetch(`${API_URL}/password/verify-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resetToken }),
+    });
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Verify reset token error:', e);
+    throw e;
+  }
+}
+
+/**
+ * Reset password with new password
+ * Step 3 of password reset flow (final step)
+ * Requires valid resetToken and matching passwords
+ */
+export async function resetPassword(resetToken, newPassword, confirmPassword) {
+  try {
+    if (newPassword !== confirmPassword) {
+      throw new Error('Passwords do not match');
+    }
+
+    const res = await fetch(`${API_URL}/password/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        resetToken,
+        newPassword,
+        confirmPassword,
+      }),
+    });
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Reset password error:', e);
+    throw e;
+  }
+}
+
+/**
+ * Check password reset status for a user
+ * Checks if user has any pending (unused) reset tokens
+ */
+export async function getPasswordResetStatus(username) {
+  try {
+    const res = await fetch(`${API_URL}/password/status?username=${encodeURIComponent(username)}`);
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Get password reset status error:', e);
+    throw e;
+  }
+}
+
+// ==================== Login/Logout Functions ====================
+
+/**
+ * User Login
+ * Authenticates user with username and password
+ * Tracks device and returns access/refresh tokens
+ * Sets isLoggedIn = true on successful login
+ * 
+ * Returns: { user, tokens, device, session }
+ */
+export async function loginUserViaPassword(username, password, deviceInfo = null) {
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        password,
+        deviceInfo,
+      }),
+    });
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Login error:', e);
+    throw e;
+  }
+}
+
+/**
+ * User Logout
+ * Logs out from a specific device
+ * 
+ * Logic:
+ * - Marks device's last session as logged out
+ * - Checks if active sessions remain
+ * - If no active sessions, sets isLoggedIn = false
+ * - Returns remaining active devices
+ * 
+ * Returns: { loggedOutDeviceId, isLoggedIn, activeDevices }
+ */
+export async function logoutUserFromDevice(deviceId, userId) {
+  try {
+    const res = await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deviceId,
+        userId,
+      }),
+    });
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Logout error:', e);
+    throw e;
+  }
+}
+
+/**
+ * Get Active Sessions
+ * Returns all devices user is currently logged in on
+ * 
+ * Returns: { isLoggedIn, activeSessions, devices[] }
+ */
+export async function getActiveSessions(userId) {
+  try {
+    const res = await fetch(`${API_URL}/auth/sessions/${userId}`);
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Get active sessions error:', e);
+    throw e;
+  }
+}
+
+/**
+ * Logout From All Devices
+ * Forces logout from all devices
+ * Sets isLoggedIn = false
+ * 
+ * Returns: { loggedOutDevices[], isLoggedIn: false }
+ */
+export async function logoutFromAllDevices(userId) {
+  try {
+    const res = await fetch(`${API_URL}/auth/logout-all/${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return handleApiResponse(res);
+  } catch (e) {
+    console.error('Logout from all devices error:', e);
     throw e;
   }
 }

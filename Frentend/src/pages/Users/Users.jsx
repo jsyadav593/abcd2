@@ -5,7 +5,7 @@ import Button from "../../components/UI/Button/Button.jsx";
 import { PageLoader } from "../../components/UI/Loader/Loader.jsx";
 import { ErrorNotification } from "../../components/ErrorBoundary/index.js";
 import "./Users.css";
-import { fetchUsers, disableUser, enableUser } from "../../services/userApi";
+import { fetchAllUsers, disableUser, enableUser, toggleCanLogin } from "../../services/userApi";
 import { exportToCSV } from "../../utils/exportToCSV";
 
 const Users = () => {
@@ -23,8 +23,8 @@ const Users = () => {
       try {
         setLoading(true);
         setError(null);
-        // Fetch with reasonable limit (not 1000)
-        const data = await fetchUsers(1, 50);
+        // Fetch all users by paging until complete
+        const data = await fetchAllUsers(100);
         setAllUsers(data);
       } catch (error) {
         console.error("Failed to fetch users", error);
@@ -61,13 +61,48 @@ const Users = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Step 1: If user has canLogin enabled, disable it first
+      if (user?.canLogin) {
+        await toggleCanLogin(id, false);
+      }
+      
+      // Step 2: Deactivate user (isActive: false)
       await disableUser(id);
+      
       setAllUsers((prev) =>
         prev.map((u) => (u._id === id ? { ...u, isActive: false, status: 'Inactive', canLogin: false } : u))
       );
     } catch (err) {
       console.error('Disable failed', err);
       setError(err.message || 'Failed to disable user');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleLogin = async (id, canLogin) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await toggleCanLogin(id, canLogin);
+
+      // Update local state: reflect canLogin and if backend returned login credentials attach them
+      setAllUsers((prev) =>
+        prev.map((u) =>
+          u._id === id
+            ? {
+                ...u,
+                canLogin: canLogin,
+                // if backend returned a login object, merge username info
+                ...(res?.login ? { loginInfo: res.login } : {}),
+              }
+            : u,
+        ),
+      );
+    } catch (err) {
+      console.error('Toggle login failed', err);
+      setError(err.message || 'Failed to toggle login');
     } finally {
       setLoading(false);
     }
@@ -83,6 +118,7 @@ const Users = () => {
     try {
       setLoading(true);
       setError(null);
+      // Enable user but keep canLogin as-is (do not force it to true)
       await enableUser(id);
       setAllUsers((prev) =>
         prev.map((u) => (u._id === id ? { ...u, isActive: true, status: 'Active' } : u))
@@ -155,6 +191,30 @@ const Users = () => {
               >
                 Edit
               </button>
+              {row.canLogin ? (
+                <button
+                  className="action-menu-item action-menu-item--warning"
+                  onClick={() => {
+                    // Disable login
+                    handleToggleLogin(row._id, false);
+                    setOpenMenuId(null);
+                  }}
+                >
+                  Disable Login
+                </button>
+              ) : (
+                <button
+                  className="action-menu-item action-menu-item--success"
+                  onClick={() => {
+                    // Enable login
+                    handleToggleLogin(row._id, true);
+                    setOpenMenuId(null);
+                  }}
+                >
+                  Enable Login
+                </button>
+              )}
+
               {row.isActive ? (
                 <button
                   className="action-menu-item action-menu-item--danger"

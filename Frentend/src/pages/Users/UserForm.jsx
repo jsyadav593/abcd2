@@ -173,17 +173,6 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
               placeholder="e.g., IT, HR, Sales"
             />
 
-            {/* <Select
-              label="Organization"
-              name="organizationId"
-              value={formData.organizationId}
-              onChange={(value) =>
-                setFormData((prev) => ({ ...prev, organizationId: value }))
-              }
-              options={organizations.map((org) => ({ label: org.name, value: org._id }))}
-              required
-            /> */}
-
             <TextInput
               label="Phone Number"
               name="phone_no"
@@ -244,33 +233,10 @@ const UserForm = ({ onSave, onClose, formData: initialData }) => {
                 { label: "No", value: "no" },
                 { label: "Yes", value: "yes" },
               ]}
-              disabled={
-                formData.role === "admin" || formData.role === "super_admin"
-              }
+              // disabled={
+              //   formData.role === "admin" || formData.role === "super_admin"
+              // }
             />
-
-            {/* {formData.canLogin && formData.status === "active" && (
-              <>
-                <TextInput
-                  label="Username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="Enter login username"
-                  required
-                />
-
-                <TextInput
-                  label="Password"
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter secure password"
-                  required
-                />
-              </>
-            )} */}
           </FormFields>
 
           <div className="form-remarks-wrapper">

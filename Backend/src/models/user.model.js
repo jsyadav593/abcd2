@@ -80,7 +80,7 @@ const userSchema = new mongoose.Schema(
     branchId: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "School",
+        ref: "Branch",
       },
     ],
 

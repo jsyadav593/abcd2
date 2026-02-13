@@ -105,6 +105,8 @@ import userRouter from "./routes/user.route.js";
 import userLoginRouter from "./routes/userLogin.route.js";
 import authRouter from "./routes/auth.route.js";
 import testRouter from "./routes/test.route.js";
+import passwordRouter from "./routes/password.route.js";
+import loginRouter from "./routes/login.route.js";
 
 // Routes Declaration
 app.use("/api/orgs", orgRouter);
@@ -114,7 +116,11 @@ app.use("/api/test", testRouter);
 
 // Authentication Routes
 app.use("/api/auth", userLoginRouter);
+app.use("/api/auth", loginRouter);
 app.use("/api/auth-data", authRouter);
+
+// Password Reset Routes
+app.use("/api/password", passwordRouter);
 
 // 404 Handler
 app.use((req, res) => {

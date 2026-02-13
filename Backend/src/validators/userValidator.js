@@ -91,6 +91,7 @@ export const createUserSchema = Joi.object({
 
   remarks: Joi.string()
     .max(500)
+    .allow('')
     .optional(),
 });
 
@@ -150,6 +151,7 @@ export const updateUserSchema = Joi.object({
 
   remarks: Joi.string()
     .max(500)
+    .allow('')
     .optional(),
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update',
