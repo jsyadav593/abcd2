@@ -40,7 +40,21 @@ app.use("/api/auth", authLimiter);
 const corsOrigin = getParsedCorsOrigin();
 app.use(
   cors({
-    origin: corsOrigin,
+    origin: (origin, callback) => {
+      // allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin) return callback(null, true);
+
+      const allowed = Array.isArray(corsOrigin)
+        ? corsOrigin.includes(origin)
+        : corsOrigin === origin;
+
+      if (allowed) return callback(null, true);
+
+      // allow all origins in development for convenience
+      if (process.env.NODE_ENV === 'development') return callback(null, true);
+
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
