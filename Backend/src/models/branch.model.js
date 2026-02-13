@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const schoolSchema = new mongoose.Schema(
+const branchSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     code: { type: String, trim: true },
@@ -16,4 +16,4 @@ const schoolSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const School = mongoose.model("School", schoolSchema);
+export const Branch = mongoose.model("Branch", branchSchema);

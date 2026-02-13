@@ -1,11 +1,18 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import dns from "dns";
 import mongoose from "mongoose";
 import connectDB from "../config/db.js";
 import { User } from "../models/user.model.js";
 import { UserLogin } from "../models/userLogin.model.js";
 import { hashPassword } from "../utils/password.js";
 
-dotenv.config({ path: "./.env" });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+// Set DNS servers for MongoDB SRV resolution
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const seedSuperAdmin = async () => {
   try {

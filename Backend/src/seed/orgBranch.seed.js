@@ -1,9 +1,16 @@
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import dns from "dns";
 import connectDB from "../config/db.js";
 import { Organization } from "../models/organization.model.js";
-import { School } from "../models/school.model.js";
+import { Branch } from "../models/branch.model.js";
 
-dotenv.config({ path: "./.env" });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+// Set DNS servers for MongoDB SRV resolution
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const seed = async () => {
   try {
@@ -32,9 +39,9 @@ const seed = async () => {
     ];
 
     for (const b of branches) {
-      const exists = await School.findOne({ code: b.code, organizationId: org._id });
+      const exists = await Branch.findOne({ code: b.code, organizationId: org._id });
       if (!exists) {
-        await School.create(b);
+        await Branch.create(b);
         console.log("Created branch:", b.name);
       } else {
         console.log("Branch exists:", exists.name);

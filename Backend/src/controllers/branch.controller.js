@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
-import { School } from "../models/school.model.js";
+import { Branch } from "../models/branch.model.js";
 import { Organization } from "../models/organization.model.js";
 import mongoose from "mongoose";
 
@@ -14,7 +14,7 @@ const createBranch = asyncHandler(async (req, res) => {
   const org = await Organization.findById(organizationId);
   if (!org) throw new apiError(404, "Organization not found");
 
-  const branch = await School.create({
+  const branch = await Branch.create({
     name,
     code,
     address,
@@ -36,8 +36,8 @@ const getBranches = asyncHandler(async (req, res) => {
   if (isActive !== undefined) filter.isActive = isActive === "true";
 
   const skip = (page - 1) * limit;
-  const branches = await School.find(filter).skip(skip).limit(parseInt(limit)).lean();
-  const total = await School.countDocuments(filter);
+  const branches = await Branch.find(filter).skip(skip).limit(parseInt(limit)).lean();
+  const total = await Branch.countDocuments(filter);
 
   return res.status(200).json(new apiResponse(200, { branches, pagination: { total, page: parseInt(page), limit: parseInt(limit) } }));
 });
@@ -46,7 +46,7 @@ const getBranches = asyncHandler(async (req, res) => {
 const getBranchById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) throw new apiError(400, "Invalid branch id");
-  const branch = await School.findById(id).populate("organizationId", "name");
+  const branch = await Branch.findById(id).populate("organizationId", "name");
   if (!branch) throw new apiError(404, "Branch not found");
   return res.status(200).json(new apiResponse(200, branch));
 });
@@ -59,7 +59,7 @@ const updateBranch = asyncHandler(async (req, res) => {
 
   if (data.organizationId && !mongoose.Types.ObjectId.isValid(data.organizationId)) throw new apiError(400, "Invalid organizationId");
 
-  const branch = await School.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  const branch = await Branch.findByIdAndUpdate(id, data, { new: true, runValidators: true });
   if (!branch) throw new apiError(404, "Branch not found");
   return res.status(200).json(new apiResponse(200, branch, "Branch updated"));
 });
@@ -69,7 +69,7 @@ const deleteBranch = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) throw new apiError(400, "Invalid branch id");
 
-  const branch = await School.findByIdAndUpdate(id, { isActive: false }, { new: true });
+  const branch = await Branch.findByIdAndUpdate(id, { isActive: false }, { new: true });
   if (!branch) throw new apiError(404, "Branch not found");
   return res.status(200).json(new apiResponse(200, branch, "Branch deactivated"));
 });
