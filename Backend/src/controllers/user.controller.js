@@ -88,7 +88,8 @@ const createUser = asyncHandler(async (req, res) => {
 
 // Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
-  const { organizationId, role, isActive, page = 1, limit = process.env.PAGE_LIMIT || 10 } = req.query;
+  const { organizationId, role, isActive } = req.query;
+  const { page = 1, limit = 10 } = req.sanitizedQuery || {};
 
   const filter = {};
 
@@ -103,16 +104,16 @@ const getAllUsers = asyncHandler(async (req, res) => {
     filter.role = role;
   }
 
-  if (isActive !== undefined && isActive.trim()) {
+  if (isActive !== undefined && isActive.trim && isActive.trim()) {
     filter.isActive = isActive === "true";
   }
 
-  const skip = (page - 1) * parseInt(limit);
+  const skip = (page - 1) * limit;
 
   try {
     const users = await User.find(filter)
       .skip(skip)
-      .limit(parseInt(limit))
+      .limit(limit)
       .select("-password")
       .lean();
 

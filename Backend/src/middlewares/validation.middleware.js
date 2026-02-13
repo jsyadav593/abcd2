@@ -31,22 +31,22 @@ export const validate = (schema, location = 'body') => {
  * Prevents negative values, excessive limits, etc.
  */
 export const sanitizeQueryParams = (req, res, next) => {
-  let { page, limit, skip, offset } = req.query;
+  const { page: rawPage, limit: rawLimit, skip: rawSkip, offset: rawOffset } = req.query;
 
   // Sanitize page
-  page = Math.max(1, parseInt(page) || 1);
-  if (page > 1000000) page = 1000000; // Max sensible page
+  const page = Math.max(1, parseInt(rawPage) || 1);
+  const maxPage = page > 1000000 ? 1000000 : page;
 
   // Sanitize limit
-  limit = Math.min(100, Math.max(1, parseInt(limit) || 10));
+  const limit = Math.min(100, Math.max(1, parseInt(rawLimit) || 10));
 
   // Sanitize skip/offset
-  skip = Math.max(0, parseInt(skip) || 0);
-  offset = Math.max(0, parseInt(offset) || 0);
+  const skip = Math.max(0, parseInt(rawSkip) || 0);
+  const offset = Math.max(0, parseInt(rawOffset) || 0);
 
-  req.query = {
-    ...req.query,
-    page,
+  // Store sanitized values on req object without modifying req.query
+  req.sanitizedQuery = {
+    page: maxPage,
     limit,
     skip,
     offset,
